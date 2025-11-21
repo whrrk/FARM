@@ -21,7 +21,7 @@ async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
     response = {"csrf_token": csrf_token}
     return response
 
-@router.post("/register", response_model=UserInfo, status_code=HTTP_201_CREATED)
+@router.post("/register", response_model=UserInfo)
 async def signup_user(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
     csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
     csrf_protect.validate_csrf(csrf_token)

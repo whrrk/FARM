@@ -28,8 +28,8 @@ class AuthJwtCsrf():
             payload, 
             self.secret_key, 
             algorithm="HS256"
-            )  
-    
+        )  
+
     def decode_jwt(self, token) -> str:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=["HS256"])
@@ -54,13 +54,6 @@ class AuthJwtCsrf():
         subject = self.verify_jwt(request)
         new_token = self.encode_jwt(subject)
         return subject, new_token
-    
-    def verify_update_csrf(self, request: Request,csrf_protect:CsrfProtect ,headers) -> tuple[str, str]:
-        csrf_token = request.headers.get("X-CSRF-Token")
-        csrf_protect.validate_csrf(csrf_token)
-        subject = self.verify_jwt(request)
-        new_token = self.encode_jwt(subject)
-        return new_token
     
     def verify_csrf_update_jwt(self, request: Request, csrf_protect: CsrfProtect, headers) -> tuple[str, str]:
         csrf_token = csrf_protect.get_csrf_from_headers(headers)
