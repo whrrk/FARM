@@ -18,7 +18,7 @@ auth= AuthJwtCsrf()
 
 @router.post("/", response_model=Todo)
 async def create_todo(request: Request, response: Response, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_update_jwt(
+    new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
     todo = jsonable_encoder(data)
@@ -63,7 +63,7 @@ async def get_single_todo(id: str, request: Request, response: Response):
 
 @router.put("/{id}", response_model=Todo)
 async def update_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_update_jwt(
+    new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
 
@@ -84,7 +84,7 @@ async def update_todo(request:Request, response: Response, id: str, data: TodoBo
 
 @router.delete("/{id}")
 async def delete_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_update_jwt(
+    new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
 

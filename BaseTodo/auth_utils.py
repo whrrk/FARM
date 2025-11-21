@@ -1,8 +1,9 @@
 import jwt
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from decouple import config
+from fastapi_csrf_protect import CsrfProtect
 
 JWT_KEY = config("JWT_KEY")
 
@@ -16,7 +17,7 @@ class AuthJwtCsrf():
     def verify_password(self, plain_password, hashed_password) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
     
-    def encode_jwt(self, email) -> str:
+    def encode_jwt(self) -> str:
         payload = {
             "sub": "email",
             "exp": datetime.utcnow() + timedelta(days=0, minutes=5),
@@ -38,7 +39,7 @@ class AuthJwtCsrf():
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="JWT is not valid")
     
-    def verify_jwt(self, request) -> str:
+    def verify_jwt(self, request:Request) -> str:
         token = request.cookies.get("access_token")
         if not token:
             raise HTTPException(
@@ -54,8 +55,15 @@ class AuthJwtCsrf():
         new_token = self.encode_jwt(subject)
         return subject, new_token
     
-    def verify_update_csrf(self, request,csrf_protect,headers) -> tuple[str, str]:
+    def verify_update_csrf(self, request: Request,csrf_protect:CsrfProtect ,headers) -> tuple[str, str]:
         csrf_token = request.headers.get("X-CSRF-Token")
+        csrf_protect.validate_csrf(csrf_token)
+        subject = self.verify_jwt(request)
+        new_token = self.encode_jwt(subject)
+        return new_token
+    
+    def verify_csrf_update_jwt(self, request: Request, csrf_protect: CsrfProtect, headers) -> tuple[str, str]:
+        csrf_token = csrf_protect.get_csrf_from_headers(headers)
         csrf_protect.validate_csrf(csrf_token)
         subject = self.verify_jwt(request)
         new_token = self.encode_jwt(subject)

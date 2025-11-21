@@ -24,7 +24,7 @@ async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
 @router.post("/register", response_model=UserInfo, status_code=HTTP_201_CREATED)
 async def signup_user(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
     csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf_in_request(csrf_token)
+    csrf_protect.validate_csrf(csrf_token)
     user = jsonable_encoder(user)
     new_user = await db_signup(user)
     return new_user
@@ -32,7 +32,7 @@ async def signup_user(request: Request, user: UserBody, csrf_protect: CsrfProtec
 @router.post("/login", response_model=SuccessMsg)
 async def login_user(request:Request, response: Response, user: UserBody, csrf_protect: CsrfProtect = Depends()):
     csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf_in_request(csrf_token)
+    csrf_protect.validate_csrf(csrf_token)
     
     user = jsonable_encoder(user)
     token = await db_login(user)
@@ -50,7 +50,7 @@ async def login_user(request:Request, response: Response, user: UserBody, csrf_p
 @router.post("/logout", response_model=SuccessMsg)
 async def logout_user(response: Response, request: Request, csrf_protect: CsrfProtect = Depends()):
     csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf_in_request(csrf_token)
+    csrf_protect.validate_csrf(csrf_token)
     response.set_cookie(
         key="access_token", 
         value="", 
@@ -63,7 +63,7 @@ async def logout_user(response: Response, request: Request, csrf_protect: CsrfPr
     return SuccessMsg(message="ログアウトに成功しました。")
 
 @router.get("/user", response_model=UserInfo)
-def get_user_refresh_jwt(request: Request, response: Response, csrf_protect: CsrfProtect = Depends()):
+def get_user_refresh_jwt(request: Request, response: Response):
     new_token, subject = auth.verify_update_jwt(request)
     
     response.set_cookie(
