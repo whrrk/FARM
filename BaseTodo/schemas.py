@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
+from decouple import config
+
+CSRF_KEY = config("CSRF_KEY")
 
 class TodoBody(BaseModel):
     title: str
@@ -23,3 +26,6 @@ class UserInfo(BaseModel):
 
 class Csrf(BaseModel):
     csrf_token: str
+
+class CsrfSettings(BaseModel):
+    secret_key: str = CSRF_KEY
