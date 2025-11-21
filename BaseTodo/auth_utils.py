@@ -38,3 +38,25 @@ class AuthJwtCsrf():
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="JWT is not valid")
     
+    def verify_jwt(self, request) -> str:
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(
+                status_code=401, detail="JWT token is missing")
+
+        _, _, value = token.partition(" ")
+        #_bear _csrf 
+        subject = self.decode_jwt(value)
+        return subject
+    
+    def verify_update_jwt(self, request) -> tuple[str, str]:
+        subject = self.verify_jwt(request)
+        new_token = self.encode_jwt(subject)
+        return subject, new_token
+    
+    def verify_update_csrf(self, request,csrf_protect,headers) -> tuple[str, str]:
+        csrf_token = request.headers.get("X-CSRF-Token")
+        csrf_protect.validate_csrf(csrf_token)
+        subject = self.verify_jwt(request)
+        new_token = self.encode_jwt(subject)
+        return new_token
