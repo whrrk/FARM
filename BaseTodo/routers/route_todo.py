@@ -1,13 +1,11 @@
 from fastapi import APIRouter
 from fastapi import Response, Request, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
-from schemas import Todo, TodoBody, SuccessMsg
+from schemas import Todo, TodoBody
 from database import db_create_todo,db_get_single_todo, db_get_todos, db_update_todo, db_delete_todo
 from starlette.status import HTTP_201_CREATED
-from typing import List
 from fastapi_csrf_protect import CsrfProtect
 from auth_utils import AuthJwtCsrf
-import jwt
 
 router = APIRouter(
     prefix="/api/todo",
@@ -39,7 +37,7 @@ async def create_todo(request: Request, response: Response, data: TodoBody, csrf
 
 @router.get("/", response_model=list[Todo])
 async def get_todos(request: Request):
-    # auth.verify_jwt(request)
+    auth.verify_jwt(request)
     res = await db_get_todos()
     return res
 

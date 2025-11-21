@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 from fastapi import Response, Request
 from fastapi.encoders import jsonable_encoder
 from schemas import UserBody, SuccessMsg, UserInfo, Csrf
