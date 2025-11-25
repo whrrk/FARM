@@ -4,12 +4,6 @@ from decouple import config
 
 CSRF_KEY = config("CSRF_KEY")
 
-class TodoBody(BaseModel):
-    title: str
-    description: Optional[str] = None
-    owner_email: str
-    done: bool = False
-
 class Todo(BaseModel):
     id: str
     title: str

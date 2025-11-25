@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi import Response, Request, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
-from schemas import Todo, TodoBody, TodoCreate, TodoUpdate
+from schemas import Todo, TodoCreate, TodoUpdate
 from database import db_create_todo,db_get_single_todo, db_get_todos, db_update_todo, db_delete_todo
 from starlette.status import HTTP_201_CREATED
 from fastapi_csrf_protect import CsrfProtect
