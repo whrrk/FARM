@@ -16,17 +16,19 @@ auth= AuthJwtCsrf()
 
 @router.post("/", response_model=Todo)
 async def create_todo(request: Request, response: Response, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_csrf_update_jwt(
+    email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
     todo = jsonable_encoder(data)
+    todo["owner_email"] = email
+
     res = await db_create_todo(todo)
     response.status_code = HTTP_201_CREATED
     response.set_cookie(
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
 
@@ -37,8 +39,8 @@ async def create_todo(request: Request, response: Response, data: TodoBody, csrf
 
 @router.get("/", response_model=list[Todo])
 async def get_todos(request: Request):
-    auth.verify_jwt(request)
-    res = await db_get_todos()
+    email = auth.verify_jwt(request)
+    res = await db_get_todos(email)
     return res
 
 @router.get("/{id}", response_model=Todo)
@@ -49,7 +51,7 @@ async def get_single_todo(id: str, request: Request, response: Response):
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
 
@@ -61,7 +63,7 @@ async def get_single_todo(id: str, request: Request, response: Response):
 
 @router.put("/{id}", response_model=Todo)
 async def update_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_csrf_update_jwt(
+    email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
 
@@ -69,12 +71,13 @@ async def update_todo(request:Request, response: Response, id: str, data: TodoBo
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
     
     todo = jsonable_encoder(data)
-    updated_todo = await db_update_todo(id, todo)
+    todo['owner_email'] = email
+    updated_todo = await db_update_todo(id, email, todo)
     if updated_todo:
         return updated_todo
     return HTTPException(
@@ -82,7 +85,7 @@ async def update_todo(request:Request, response: Response, id: str, data: TodoBo
 
 @router.delete("/{id}")
 async def delete_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
-    new_token = auth.verify_csrf_update_jwt(
+    email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
 
@@ -90,11 +93,11 @@ async def delete_todo(request:Request, response: Response, id: str, data: TodoBo
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
     
-    deleted_todo = await db_delete_todo(id)
+    deleted_todo = await db_delete_todo(id, email)
     if deleted_todo:
         return {"message": "Task deleted successfully"}
     return HTTPException(

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from fastapi import Response, Request
+from fastapi import Response, Request,HTTPException
 from fastapi.encoders import jsonable_encoder
 from schemas import UserBody, SuccessMsg, UserInfo, Csrf
-from database import db_signup, db_login
+from database import db_signup, db_login, db_get_user_by_email
 from starlette.status import HTTP_201_CREATED
 from auth_utils import AuthJwtCsrf
 from fastapi_csrf_protect import CsrfProtect
@@ -21,7 +21,7 @@ async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
     response = {"csrf_token": csrf_token}
     return response
 
-@router.post("/register", response_model=UserInfo)
+@router.post("/signup", response_model=UserInfo)
 async def signup_user(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
     csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
     csrf_protect.validate_csrf(csrf_token)
@@ -41,26 +41,41 @@ async def login_user(request:Request, response: Response, user: UserBody, csrf_p
         key="access_token",
         value=f"Bearer {token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
     
     return SuccessMsg(message="ログインに成功しました。")
 
 @router.post("/logout", response_model=SuccessMsg)
-async def logout_user(response: Response, request: Request, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf(csrf_token)
-    response.set_cookie(
-        key="access_token", 
-        value="", 
-        httponly=True,  
-        samesite="none",
-        secure=True,
-        max_age=0
-    )
+async def logout_user(response: Response):
+    response.delete_cookie("access_token")
     
     return SuccessMsg(message="ログアウトに成功しました。")
+
+@router.get("/me")
+async def get_current_user(request: Request):
+    try:
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="No token")
+        
+        if token.startswith("Bearer "):
+            token = token.replace("Bearer ", "")
+
+        email = auth.decode_jwt(token)
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        print(email)
+        user = await db_get_user_by_email(email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return {"email": email}
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 @router.get("/user", response_model=UserInfo)
 def get_user_refresh_jwt(request: Request, response: Response):
@@ -70,7 +85,7 @@ def get_user_refresh_jwt(request: Request, response: Response):
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
-        samesite="none",
+        samesite="lax",
         secure=True
     )
     

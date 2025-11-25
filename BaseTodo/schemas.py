@@ -7,11 +7,13 @@ CSRF_KEY = config("CSRF_KEY")
 class TodoBody(BaseModel):
     title: str
     description: str
+    owner_email: str
 
 class Todo(BaseModel):
     id: str
     title: str
     description: str
+    owner_email: str
 
 class SuccessMsg(BaseModel):
     message: str

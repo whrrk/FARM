@@ -1,0 +1,185 @@
+:root {
+    --color-bg: #f5f5f8;
+    --color-card-bg: #ffffff;
+    --color-border: #e0e0e6;
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-text-main: #111827;
+    --color-text-sub: #6b7280;
+    --color-error-bg: #fef2f2;
+    --color-error-border: #fecaca;
+    --color-error-text: #b91c1c;
+    --radius-lg: 16px;
+    --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+  }
+  
+  body {
+    background: radial-gradient(circle at top, #e0ebff 0, #f5f5f8 45%, #f9fafb 100%);
+  }
+  
+  /* 화면 전체 가운데 정렬 */
+  .login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    padding: 24px;
+  }
+  
+  /* 카드 박스 */
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--color-card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 32px 28px 28px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+  
+  /* 제목/부제목 */
+  .login-title {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: 0.03em;
+  }
+  
+  .login-subtitle {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: var(--color-text-sub);
+  }
+  
+  /* 폼 전체 */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  /* 각 필드 블록 */
+  .login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  /* 라벨 */
+  .login-label {
+    font-size: 13px;
+    color: var(--color-text-sub);
+  }
+  
+  /* 인풋 */
+  .login-input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    font-size: 14px;
+    outline: none;
+    background-color: #f9fafb;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      background-color 0.15s ease;
+  }
+  
+  .login-input:focus {
+    border-color: var(--color-primary);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+  }
+  
+  /* 에러 박스 */
+  .login-error {
+    margin-top: 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background-color: var(--color-error-bg);
+    border: 1px solid var(--color-error-border);
+    font-size: 12px;
+    color: var(--color-error-text);
+  }
+  
+  /* 버튼 */
+  .login-button {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--color-primary), #3b82f6);
+    color: #ffffff;
+    transition:
+      transform 0.1s ease,
+      box-shadow 0.1s ease,
+      opacity 0.1s ease,
+      background 0.15s ease;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+  }
+  
+  .login-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--color-primary-hover), #2563eb);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.4);
+  }
+  
+  .login-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  }
+  
+  .login-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+  }
+  
+  /* 힌트 텍스트 */
+  .login-hint {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--color-text-sub);
+  }
+  
+  /* 모바일 대응 */
+  @media (max-width: 480px) {
+    .login-card {
+      padding: 24px 20px 20px;
+    }
+  
+    .login-title {
+      font-size: 22px;
+    }
+  }
+  
+  .link-button {
+    border: none;
+    padding: 0;
+    margin: 0 0 0 4px;
+    background: none;
+    color: var(--color-primary);
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .logout-btn {
+    float: right;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    background-color: #ef4444;
+    color: white;
+  }
+  .logout-btn:hover {
+    background-color: #dc2626;
+  }

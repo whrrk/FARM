@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 import jwt
 from fastapi import HTTPException, Request
 from passlib.context import CryptContext
@@ -12,14 +13,14 @@ class AuthJwtCsrf():
     secret_key = JWT_KEY
 
     def generate_hashed_password(self, password) -> str:
-        self.pwd_context.hash(password)
+        return self.pwd_context.hash(password)
     
     def verify_password(self, plain_password, hashed_password) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
     
-    def encode_jwt(self) -> str:
+    def encode_jwt(self, email) -> str:
         payload = {
-            "sub": "email",
+            "sub": email,
             "exp": datetime.utcnow() + timedelta(days=0, minutes=5),
             "iat": datetime.utcnow()
         }
@@ -58,6 +59,19 @@ class AuthJwtCsrf():
     def verify_csrf_update_jwt(self, request: Request, csrf_protect: CsrfProtect, headers) -> tuple[str, str]:
         csrf_token = csrf_protect.get_csrf_from_headers(headers)
         csrf_protect.validate_csrf(csrf_token)
-        subject = self.verify_jwt(request)
-        new_token = self.encode_jwt(subject)
-        return new_token
+        raw_token = request.cookies.get("access_token")
+        if not raw_token:
+            raise HTTPException(status_code=401, detail="No token")
+
+        if raw_token.startswith("Bearer "):
+            raw_token = raw_token.replace("Bearer ", "")
+        
+        payload = jwt.decode(raw_token, self.secret_key, algorithms=["HS256"])
+        email = payload.get("sub")
+        
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        
+        new_token = self.encode_jwt(email)
+
+        return email, new_token

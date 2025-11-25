@@ -21,6 +21,7 @@ def todo_serializer(todo) -> dict:
         "id": str(todo["_id"]),
         "title": todo["title"],
         "description": todo["description"],
+        "owner_email": todo["email"]
     }
 
 def user_serializer(user) -> dict:
@@ -33,14 +34,18 @@ def user_serializer(user) -> dict:
 async def db_create_todo(data: dict) -> Union[dict, bool]:
     todo = await collection_todos.insert_one(data)
     new_todo = await collection_todos.find_one({"_id": todo.inserted_id})
+    
     if new_todo:
         return todo_serializer(new_todo)
     return False
 
-async def db_get_todos() -> list:
+async def db_get_todos(email: str) -> list:
     todos = []
-    for todo in await collection_todos.find().to_list(length=100):
-        todos.append(todo_serializer(todo))
+    cursor = collection_todos.find({"owner_email": email})
+    async for todo in cursor:
+        todo["id"] = str(todo["_id"])
+        todo.pop("_id", None)
+        todos.append(todo)
     return todos
 
 async def db_get_single_todo(id: str) -> Union[dict, bool]:
@@ -50,7 +55,7 @@ async def db_get_single_todo(id: str) -> Union[dict, bool]:
     return False
 
 async def db_update_todo(id: str, data: dict) -> Union[dict, bool]:
-    todo = await collection_todos.update_one(
+    todo = await collection_todos.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )
     if todo.modified_count:
@@ -58,8 +63,10 @@ async def db_update_todo(id: str, data: dict) -> Union[dict, bool]:
         return todo_serializer(updated_todo)
     return False
 
-async def db_delete_todo(id: str) -> bool:  
-    todo = await collection_todos.delete_one({"_id": ObjectId(id)})
+async def db_delete_todo(id: str, email: str) -> bool:  
+    todo = await collection_todos.delete_one(
+        {"_id": ObjectId(id), "owner_email": email}
+        )
     if todo.deleted_count:
         return True
     return False
@@ -67,7 +74,6 @@ async def db_delete_todo(id: str) -> bool:
 async def db_signup(data: dict) -> dict:
     email = data.get("email")
     password = data.get("password")
-
     overlap_user = await collection_user.find_one({"email": email})
     
     if overlap_user:
@@ -88,3 +94,10 @@ async def db_login(data: dict) -> str:
             status_code=401, detail="Invalid email or password")
     token = auth.encode_jwt(user["email"])
     return token
+
+async def db_get_user_by_email(email: str) -> str|bool:
+    user = await collection_user.find_one({"email": email})
+    if user:
+        return user
+    return False
+    
