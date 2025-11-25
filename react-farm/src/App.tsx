@@ -26,7 +26,6 @@ function App() {
     return <TodoList onLogout={() => setLoggedIn(false)} />;
   }
 
-  // 로그인 안 된 상태 → 로그인 / 회원가입 모드 분기
   if (authMode === "login") {
     return (
       <LoginForm

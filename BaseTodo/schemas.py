@@ -6,14 +6,26 @@ CSRF_KEY = config("CSRF_KEY")
 
 class TodoBody(BaseModel):
     title: str
-    description: str
+    description: Optional[str] = None
     owner_email: str
+    done: bool = False
 
 class Todo(BaseModel):
     id: str
     title: str
-    description: str
+    description: Optional[str] = None
     owner_email: str
+    done: bool
+
+class TodoCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    done: bool = False
+
+class TodoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    done: bool = False
 
 class SuccessMsg(BaseModel):
     message: str

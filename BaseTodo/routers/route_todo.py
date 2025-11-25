@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi import Response, Request, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
-from schemas import Todo, TodoBody
+from schemas import Todo, TodoBody, TodoCreate, TodoUpdate
 from database import db_create_todo,db_get_single_todo, db_get_todos, db_update_todo, db_delete_todo
 from starlette.status import HTTP_201_CREATED
 from fastapi_csrf_protect import CsrfProtect
@@ -15,7 +15,13 @@ router = APIRouter(
 auth= AuthJwtCsrf()
 
 @router.post("/", response_model=Todo)
-async def create_todo(request: Request, response: Response, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
+async def create_todo(
+    request: Request, 
+    response: Response, 
+    data: TodoCreate, 
+    csrf_protect: CsrfProtect = Depends()
+    ):
+
     email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
@@ -62,7 +68,14 @@ async def get_single_todo(id: str, request: Request, response: Response):
         status_code=404, detail="Task of ID: {id} doesn't exist")
 
 @router.put("/{id}", response_model=Todo)
-async def update_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
+async def update_todo(
+    request:Request, 
+    response: Response, 
+    id: str, 
+    data: TodoUpdate, 
+    csrf_protect: CsrfProtect = Depends()
+    ):
+
     email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )
@@ -77,14 +90,21 @@ async def update_todo(request:Request, response: Response, id: str, data: TodoBo
     
     todo = jsonable_encoder(data)
     todo['owner_email'] = email
-    updated_todo = await db_update_todo(id, email, todo)
+    todo = {k: v for k, v in data.dict().items() if v is not None}
+    updated_todo = await db_update_todo(id, todo)
     if updated_todo:
         return updated_todo
     return HTTPException(
         status_code=404, detail="Update Task Failed")  
 
 @router.delete("/{id}")
-async def delete_todo(request:Request, response: Response, id: str, data: TodoBody, csrf_protect: CsrfProtect = Depends()):
+async def delete_todo(
+    request:Request, 
+    response: Response, 
+    id: str, 
+    csrf_protect: CsrfProtect = Depends()
+    ):
+
     email, new_token = auth.verify_csrf_update_jwt(
         request, csrf_protect, request.headers
     )

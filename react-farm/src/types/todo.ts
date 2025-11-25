@@ -3,6 +3,7 @@ export interface Todo {
     title: string
     description: string
     owner_email: string
+    done: boolean
 }
 
 export interface CreateTodo {
