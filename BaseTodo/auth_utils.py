@@ -56,10 +56,10 @@ class AuthJwtCsrf():
         new_token = self.encode_jwt(subject)
         return subject, new_token
     
-    def verify_csrf_update_jwt(self, request: Request, csrf_protect: CsrfProtect, headers) -> tuple[str, str]:
-        csrf_token = csrf_protect.get_csrf_from_headers(headers)
-        csrf_protect.validate_csrf(csrf_token)
+    async def verify_csrf_update_jwt(self, request: Request, csrf_protect: CsrfProtect) -> tuple[str, str]:
+        await csrf_protect.validate_csrf(request)
         raw_token = request.cookies.get("access_token")
+        
         if not raw_token:
             raise HTTPException(status_code=401, detail="No token")
 

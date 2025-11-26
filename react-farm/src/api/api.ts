@@ -1,7 +1,8 @@
-import axios from "axios";
+import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
 import type { CsrfToken } from "../types/index";
 import type { UserInfo, User } from "../types/auth";
 import { type Todo, type CreateTodo } from "../types/todo";
+import { getCsrfToken } from "./csrf";
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -60,3 +61,23 @@ export const TodoApi = {
     });
   },
 };
+
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const method = (config.method ?? "get").toLowerCase();
+
+    if (["post", "put", "patch", "delete"].includes(method)) {
+      const csrf = getCsrfToken();
+
+      if (csrf) {
+        if (!config.headers) {
+          config.headers = new AxiosHeaders();
+        }
+        (config.headers as AxiosHeaders).set("X-CSRF-Token", csrf);
+      }
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);

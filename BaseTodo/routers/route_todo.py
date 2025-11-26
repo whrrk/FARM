@@ -12,6 +12,7 @@ router = APIRouter(
     tags=["todo"],
     responses={404: {"description": "項目が見つかりません"}},
 )
+
 auth= AuthJwtCsrf()
 
 @router.post("/", response_model=Todo)
@@ -22,9 +23,7 @@ async def create_todo(
     csrf_protect: CsrfProtect = Depends()
     ):
 
-    email, new_token = auth.verify_csrf_update_jwt(
-        request, csrf_protect, request.headers
-    )
+    email, new_token = await auth.verify_csrf_update_jwt(request, csrf_protect)
     todo = jsonable_encoder(data)
     todo["owner_email"] = email
 
@@ -35,7 +34,7 @@ async def create_todo(
         value=f"Bearer {new_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
 
     if res:
@@ -58,7 +57,7 @@ async def get_single_todo(id: str, request: Request, response: Response):
         value=f"Bearer {new_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
 
     todo =  await db_get_single_todo(id)
@@ -76,16 +75,14 @@ async def update_todo(
     csrf_protect: CsrfProtect = Depends()
     ):
 
-    email, new_token = auth.verify_csrf_update_jwt(
-        request, csrf_protect, request.headers
-    )
+    email, new_token = await auth.verify_csrf_update_jwt(request, csrf_protect)
 
     response.set_cookie(
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
     
     todo = jsonable_encoder(data)
@@ -105,16 +102,14 @@ async def delete_todo(
     csrf_protect: CsrfProtect = Depends()
     ):
 
-    email, new_token = auth.verify_csrf_update_jwt(
-        request, csrf_protect, request.headers
-    )
+    email, new_token = await auth.verify_csrf_update_jwt(request, csrf_protect)
 
     response.set_cookie(
         key="access_token",
         value=f"Bearer {new_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
     
     deleted_todo = await db_delete_todo(id, email)

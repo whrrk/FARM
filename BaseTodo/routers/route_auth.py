@@ -16,33 +16,32 @@ router = APIRouter(
 auth = AuthJwtCsrf()
 
 @router.get("/csrf-token", response_model=Csrf)
-async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.generate_csrf()
-    response = {"csrf_token": csrf_token}
-    return response
+async def get_csrf_token(response: Response, csrf_protect: CsrfProtect = Depends()):
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    csrf_protect.set_csrf_cookie(signed_token, response)
+
+    return {"csrf_token": csrf_token}
 
 @router.post("/signup", response_model=UserInfo)
 async def signup_user(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf(csrf_token)
+    await csrf_protect.validate_csrf(request)
     user = jsonable_encoder(user)
     new_user = await db_signup(user)
     return new_user
 
 @router.post("/login", response_model=SuccessMsg)
 async def login_user(request:Request, response: Response, user: UserBody, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf(csrf_token)
-    
+    await csrf_protect.validate_csrf(request)
+
     user = jsonable_encoder(user)
-    token = await db_login(user)
+    jwt_token = await db_login(user)
    
     response.set_cookie(
         key="access_token",
-        value=f"Bearer {token}",
+        value=f"Bearer {jwt_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
     
     return SuccessMsg(message="ログインに成功しました。")
@@ -85,7 +84,7 @@ def get_user_refresh_jwt(request: Request, response: Response):
         value=f"Bearer {new_token}",
         httponly=True,
         samesite="lax",
-        secure=True
+        secure=False
     )
     
     return UserInfo(email=subject)
