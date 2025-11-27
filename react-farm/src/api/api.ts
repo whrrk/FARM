@@ -40,23 +40,23 @@ export const AuthApi = {
 
 export const TodoApi = {
   getList: async (): Promise<Todo[]> => {
-    const res = await api.get("/api/todo");
+    const res = await api.get("/api/todo/");
     return res.data;
   },
   create: async (data: CreateTodo, csrfToken: string): Promise<Todo> => {
-    const res = await api.post("/api/todo", data, {
+    const res = await api.post("/api/todo/", data, {
       headers: { "X-CSRF-Token": csrfToken },
     });
     return res.data;
   },
   update: async (id: string, data: Partial<Todo>, csrfToken: string): Promise<Todo> => {
-    const res = await api.put(`/api/todo/${id}/`, data, {
+    const res = await api.put(`/api/todo/${id}`, data, {
       headers: { "X-CSRF-Token": csrfToken },
     });
     return res.data;
   },
   remove: async (id: string, csrfToken: string): Promise<void> => {
-    await api.delete(`/api/todo/${id}/`, {
+    await api.delete(`/api/todo/${id}`, {
       headers: { "X-CSRF-Token": csrfToken },
     });
   },

@@ -4,7 +4,6 @@ import { LoginForm } from "./components/auth/LoginForm";
 import { SignUpForm } from "./components/auth/SignUpForm";
 import { TodoList } from "./components/todo/TodoList";
 import { api } from "./api/api";
-import { loadCsrfToken } from "./api/csrf";
 
 type AuthMode = "login" | "register";
 
@@ -19,7 +18,6 @@ function App() {
       .then(() => setLoggedIn(true))
       .catch(() => setLoggedIn(false))
       .finally(() => setLoading(false));
-      loadCsrfToken().catch(console.error);
   }, []);
 
   if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;

@@ -4,7 +4,7 @@ let csrfToken: string | null = null;
 
 // 최초 1회 가져오는 함수 (async)
 export async function loadCsrfToken() {
-  const res = await api.get("/csrf-token");
+  const res = await api.get("/api/csrf-token");
   csrfToken = res.data.csrf_token;
 }
 
