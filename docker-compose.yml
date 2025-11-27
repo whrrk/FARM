@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: ./BaseTodo
+      dockerfile: Dockerfile
+    container_name: farm-api
+    env_file:
+      - ./BaseTodo/.env      # Fast API Env
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./react-farm
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: "http://localhost:8000"
+    container_name: farm-web
+    ports:
+      - "5173:80"           # http://localhost:5173
+    depends_on:
+      - api
